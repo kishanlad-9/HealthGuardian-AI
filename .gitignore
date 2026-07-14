@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+
+# Streamlit
+streamlit.log
+.streamlit/secrets.toml
+
+# Environment/secrets
+.env
+
+# Data & model artifacts (large/binary - see datasets/README.md and
+# saved_models/README.md for how to regenerate instead of committing)
+datasets/*.csv
+datasets/*.data
+saved_models/*.joblib
+saved_models/*.pkl
+
+# SQLite database (generated at runtime, not source)
+database/*.db
+database/*.sqlite3
+
+# Generated reports
+reports/*.pdf
+
+# OS/editor noise
+.DS_Store
+.vscode/
+.idea/
