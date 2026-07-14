@@ -9,6 +9,9 @@ and utils/ - not here - so this file remains easy to read as the app grows.
 """
 import streamlit as st
 
+from authentication.session import get_current_user, is_logged_in
+from database.db import init_db
+
 st.set_page_config(
     page_title="HealthGuardian AI",
     page_icon="🩺",
@@ -16,21 +19,25 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+init_db()  # idempotent - creates tables on first run, no-ops after
+
 
 def render_landing() -> None:
-    """Render the landing page shown before any feature milestones exist."""
+    """Render the landing page."""
     st.title("🩺 HealthGuardian AI")
     st.subheader("Explainable chronic disease risk prediction")
+
+    if is_logged_in():
+        user = get_current_user()
+        st.success(f"Welcome back, **{user.username}**! Use the sidebar to navigate.")
+    else:
+        st.info("👈 Log in or create an account from the sidebar to get started.")
 
     st.markdown(
         """
         Welcome to **HealthGuardian AI** — a portfolio project demonstrating
         end-to-end ML engineering: authentication, disease risk prediction,
         SHAP-based explainability, and PDF reporting.
-
-        **Project status: Milestone 1 - project skeleton.**
-        Feature pages (login, prediction, dashboard) will appear in the
-        sidebar as later milestones are completed.
         """
     )
 
@@ -38,8 +45,8 @@ def render_landing() -> None:
         st.markdown(
             """
             - [x] Milestone 1: Project skeleton, dependencies, first commit
-            - [ ] Milestone 2: Authentication
-            - [ ] Milestone 3: SQLite schema
+            - [x] Milestone 2: Authentication
+            - [ ] Milestone 3: SQLite schema (prediction history)
             - [ ] Milestone 4: Heart disease model
             - [ ] Milestone 5: Prediction UI integration
             - [ ] Milestone 6: SHAP explanations
