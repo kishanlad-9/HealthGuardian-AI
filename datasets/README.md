@@ -1,12 +1,28 @@
 # datasets/
 
 Raw and processed datasets used to train the ML models. Not committed to git
-(see `.gitignore`) — data files are regenerated/downloaded, not versioned,
-to keep the repo lean and avoid redistributing UCI data directly.
+(see `.gitignore`) — regenerated via download scripts, not versioned, to
+keep the repo lean and avoid redistributing UCI data directly.
 
-Expected contents once Milestone 4 (Heart Disease model) begins:
-- `heart_disease_uci.csv` — UCI Heart Disease dataset
-- `pima_diabetes.csv` — UCI Pima Indians Diabetes dataset (Milestone 7)
+## Heart Disease (Milestone 4)
 
-A `download_datasets.py` script will be added in Milestone 4 to fetch these
-reproducibly rather than requiring manual download.
+```bash
+python ml/download_heart_dataset.py
+```
+
+Downloads `heart_disease_uci.csv` — the UCI Cleveland Heart Disease dataset
+(303 patients, 13 clinical features + binary target), from a community
+mirror on GitHub (the original UCI archive isn't always reachable from
+every environment, so a GitHub-hosted copy is used for reproducibility).
+
+**Known data-quality caveat**: in this specific mirror, the values `ca=4`
+and `thal=0` are widely reported in public discussion of this dataset to
+actually represent missing-value codes from the original UCI encoding,
+not real clinical categories. `ml/preprocessing.py` treats them as their
+own one-hot category rather than silently imputing them — documented
+there and here rather than "fixed" quietly, since imputation choices
+should be visible, not hidden inside a preprocessing step.
+
+## Diabetes (Milestone 7 — not yet added)
+
+- `pima_diabetes.csv` — UCI Pima Indians Diabetes dataset
