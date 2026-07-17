@@ -35,15 +35,34 @@ ALL_FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 def load_heart_data() -> tuple[pd.DataFrame, pd.Series]:
     """Loads the dataset and splits into features (X) and target (y).
+
+    IMPORTANT - label inversion fix: in this dataset file, the raw `target`
+    column is 0 for disease-PRESENT and 1 for disease-ABSENT - the opposite
+    of the intuitive convention (and the opposite of what the column name
+    suggests). This is a known, documented quirk of this specific dataset
+    lineage (search "kaggle ronitf heart-disease-uci discussion 105877" -
+    the same reprocessed file this mirror is based on). Verified directly
+    against the data before trusting the discussion: the raw target=0 group
+    has higher age/cholesterol/oldpeak, lower max heart rate, ~4x the
+    exercise-induced-angina rate, and ~3x the rate of blocked vessels
+    (ca > 0) compared to target=1 - all classic heart-disease indicators,
+    confirming target=0 is the disease-positive group.
+
+    This function returns y INVERTED (`1 - raw_target`) so that everywhere
+    else in this codebase - predict_heart.py, prediction_history.risk_label,
+    the UI - `1` / "positive" consistently means "heart disease present",
+    matching normal convention. Do not reintroduce the raw column directly.
+
     Raises FileNotFoundError with an actionable message if the dataset
-    hasn't been downloaded yet."""
+    hasn't been downloaded yet.
+    """
     if not DATASET_PATH.exists():
         raise FileNotFoundError(
             f"{DATASET_PATH} not found. Run: python ml/download_heart_dataset.py"
         )
     df = pd.read_csv(DATASET_PATH)
     X = df[ALL_FEATURES]
-    y = df[TARGET_COLUMN]
+    y = 1 - df[TARGET_COLUMN]  # invert - see docstring
     return X, y
 
 

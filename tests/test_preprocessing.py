@@ -41,6 +41,31 @@ def test_feature_lists_are_disjoint_and_complete():
     assert set(NUMERIC_FEATURES) | set(CATEGORICAL_FEATURES) == set(ALL_FEATURES)
 
 
+def test_target_direction_matches_known_risk_factors(heart_data):
+    """Regression guard for a real bug: this dataset's raw `target` column
+    is inverted (0=disease-present, 1=disease-absent - see load_heart_data
+    docstring). If this ever silently regresses (e.g. someone "fixes" the
+    inversion thinking it's a leftover mistake), predictions would flip to
+    calling healthy profiles high-risk. Checks two independent, well-known
+    heart-disease indicators point the right direction after the fix:
+    higher age and lower max heart rate should correlate with y=1 (disease)."""
+    X, y = heart_data
+    disease_group_age = X.loc[y == 1, "age"].mean()
+    healthy_group_age = X.loc[y == 0, "age"].mean()
+    assert disease_group_age > healthy_group_age, (
+        "Disease-positive group should skew older - if this fails, the "
+        "target inversion fix in load_heart_data() may have regressed."
+    )
+
+    disease_group_thalach = X.loc[y == 1, "thalach"].mean()
+    healthy_group_thalach = X.loc[y == 0, "thalach"].mean()
+    assert disease_group_thalach < healthy_group_thalach, (
+        "Disease-positive group should have LOWER max heart rate achieved "
+        "(thalach) - if this fails, check the target inversion in "
+        "load_heart_data()."
+    )
+
+
 def test_preprocessor_transforms_without_error(heart_data):
     X, _ = heart_data
     preprocessor = build_preprocessor()
