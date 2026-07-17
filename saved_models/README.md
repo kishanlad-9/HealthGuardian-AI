@@ -4,7 +4,7 @@ Serialized, trained model artifacts (`.joblib`), loaded at runtime by the
 Streamlit app. Not committed to git — regenerate with the training scripts
 below rather than committing binaries to the repo.
 
-## heart_disease_model.joblib (Milestone 4)
+## heart_disease_model.joblib (Milestone 4, corrected in Milestone 5)
 
 ```bash
 python ml/download_heart_dataset.py   # if not already downloaded
@@ -17,11 +17,22 @@ the full training set, evaluates on a held-out 20% test set, and saves the
 winning **pipeline** (preprocessing + model as one artifact — see
 `ml/preprocessing.py`) here.
 
-Current result (see `reports/heart_model_training_report.json` for full
-metrics): **Logistic Regression** won cross-validation (0.892 ROC-AUC) over
-Random Forest (0.887) and XGBoost (0.869) — worth noting since it's a
-reminder that the more complex model doesn't automatically win, especially
-on a 303-row dataset. Test set: 88.5% accuracy, 0.910 ROC-AUC.
+**⚠️ History**: the model trained in Milestone 4 was trained on inverted
+labels (this dataset's raw `target` column has disease-present = `0`, the
+opposite of the intuitive convention — see `datasets/README.md`). Caught in
+Milestone 5 by sanity-checking predictions against two synthetic patient
+profiles before wiring the model into the UI — a healthy profile scored
+*higher* risk than an unhealthy one, which was the tell. Fixed in
+`ml/preprocessing.load_heart_data()` and retrained; a regression test now
+guards against this recurring
+(`tests/test_preprocessing.py::test_target_direction_matches_known_risk_factors`).
+
+**Current result** (post-fix, see `reports/heart_model_training_report.json`
+for full metrics): **Random Forest** won cross-validation (0.910 ROC-AUC)
+over Logistic Regression (0.906) and XGBoost (0.887). Test set: 82.0%
+accuracy, 0.903 ROC-AUC, 75.0% recall.
 
 The saved file is a dict: `{"pipeline": ..., "feature_names": [...],
-"model_name": "logistic_regression"}` — load with `joblib.load()`.
+"model_name": "random_forest"}` — load with `joblib.load()`, or use
+`ml/predict_heart.py`'s `predict_heart_disease()` for a ready-made
+inference function that also applies risk-level labeling.
