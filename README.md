@@ -70,6 +70,10 @@ python ml/download_heart_dataset.py    # downloads datasets/heart_disease_uci.cs
 python -m ml.train_heart_model         # trains, compares, saves the best model
 ```
 
+Both `python ml/train_heart_model.py` (direct) and `python -m ml.train_heart_model`
+(module) work — the script inserts the project root onto `sys.path` itself,
+so VS Code's "Run" button works too without a `ModuleNotFoundError`.
+
 Compares Logistic Regression, Random Forest, and XGBoost via 5-fold
 cross-validated ROC-AUC on the UCI Cleveland Heart Disease dataset (303
 patients), then evaluates the winner on a held-out 20% test set. See

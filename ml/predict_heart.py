@@ -9,6 +9,11 @@ by a future non-Streamlit interface (e.g. an API) without changes.
 """
 from dataclasses import dataclass
 from pathlib import Path
+import sys
+
+# See train_heart_model.py for why this is needed - makes direct execution
+# and VS Code's "Run" button work the same as `python -m ml.predict_heart`.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import joblib
 import pandas as pd
