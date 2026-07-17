@@ -1,9 +1,13 @@
 """Heart disease risk prediction page. Requires login (require_login stops
 the page here if nobody's signed in)."""
+import plotly.graph_objects as go
 import streamlit as st
 
 from authentication.session import require_login
 from database.predictions import get_predictions_for_user, save_prediction
+from ml.explain_heart import ModelNotTrainedError as ExplainerNotTrainedError
+from ml.explain_heart import explain_prediction
+from ml.feature_labels import CP_OPTIONS, RESTECG_OPTIONS, SLOPE_OPTIONS, THAL_OPTIONS
 from ml.predict_heart import ModelNotTrainedError, predict_heart_disease
 
 st.set_page_config(page_title="Heart Disease Risk - HealthGuardian AI", page_icon="🫀")
@@ -15,16 +19,6 @@ st.caption(
     "⚠️ This is a portfolio ML project, not a medical device. Results are not a "
     "diagnosis - always consult a healthcare professional for medical concerns."
 )
-
-CP_OPTIONS = {
-    0: "Typical angina", 1: "Atypical angina",
-    2: "Non-anginal pain", 3: "Asymptomatic",
-}
-RESTECG_OPTIONS = {
-    0: "Normal", 1: "ST-T wave abnormality", 2: "Left ventricular hypertrophy",
-}
-SLOPE_OPTIONS = {0: "Upsloping", 1: "Flat", 2: "Downsloping"}
-THAL_OPTIONS = {0: "Unknown/other", 1: "Fixed defect", 2: "Normal", 3: "Reversible defect"}
 
 with st.form("heart_prediction_form"):
     st.subheader("Patient information")
@@ -49,6 +43,26 @@ with st.form("heart_prediction_form"):
 
     submitted = st.form_submit_button("Predict risk", type="primary")
 
+
+def render_shap_chart(contributions, n: int = 8) -> go.Figure:
+    """Horizontal bar chart of the top-n SHAP contributions, red=increases
+    risk, green=decreases risk - deliberately matching the Low/Medium/High
+    color convention used elsewhere on this page."""
+    top = contributions[:n]
+    top = list(reversed(top))  # so the biggest contributor plots at the top
+    labels = [f"{c.display_name} ({c.value_display})" for c in top]
+    values = [c.shap_value for c in top]
+    colors = ["#d62728" if v > 0 else "#2ca02c" for v in values]
+
+    fig = go.Figure(go.Bar(x=values, y=labels, orientation="h", marker_color=colors))
+    fig.update_layout(
+        xaxis_title="Impact on risk score (SHAP value)",
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=350,
+    )
+    return fig
+
+
 if submitted:
     input_features = {
         "age": age, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
@@ -65,6 +79,29 @@ if submitted:
         st.metric("Predicted probability of heart disease", f"{result.risk_probability * 100:.1f}%")
         st.progress(result.risk_probability)
 
+        shap_values_to_save = None
+        try:
+            explanation = explain_prediction(input_features)
+        except ExplainerNotTrainedError:
+            explanation = None
+
+        if explanation:
+            st.subheader("Why this result?")
+            st.caption(
+                "Each factor below is compared against this model's average patient. "
+                "Red pushes the score up, green pushes it down."
+            )
+            for sentence in explanation.plain_language_summary(n=4):
+                st.markdown(f"- {sentence}")
+
+            with st.expander("See all 13 factors"):
+                st.plotly_chart(render_shap_chart(explanation.contributions), use_container_width=True)
+
+            shap_values_to_save = {
+                "base_value": explanation.base_value,
+                "contributions": {c.feature: c.shap_value for c in explanation.contributions},
+            }
+
         save_prediction(
             user_id=user.id,
             disease_type="heart_disease",
@@ -72,6 +109,7 @@ if submitted:
             risk_probability=result.risk_probability,
             risk_label=result.risk_label,
             model_version=result.model_version,
+            shap_values=shap_values_to_save,
         )
         st.success("Saved to your prediction history.")
 

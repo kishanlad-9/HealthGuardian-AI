@@ -5,7 +5,7 @@ demonstrating end-to-end ML engineering: authentication, ML model training
 and serving, SHAP-based explainability, and PDF reporting, built as a
 Streamlit application.
 
-**Project status:** Milestone 5 of 9 — prediction UI live. See [Roadmap](#roadmap).
+**Project status:** Milestone 6 of 9 — SHAP explanations live. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -58,10 +58,41 @@ Visit `http://localhost:8501`.
 - [x] **Milestone 3** — SQLite schema (users, prediction history)
 - [x] **Milestone 4** — Heart disease model (UCI dataset, training pipeline)
 - [x] **Milestone 5** — Prediction UI integration
-- [ ] **Milestone 6** — SHAP explanations
+- [x] **Milestone 6** — SHAP explanations
 - [ ] **Milestone 7** — Diabetes model (Pima Indians dataset)
 - [ ] **Milestone 8** — Dashboards and PDF reports
 - [ ] **Milestone 9** — Testing and deployment
+
+## Milestone 6: SHAP Explanations
+
+Every prediction now comes with a plain-English explanation of *why* -
+not just a risk score. `ml/explain_heart.py` uses `shap.TreeExplainer`
+(exact SHAP values for the tree-based Random Forest model, not the slower
+model-agnostic approximation) to compute each feature's contribution,
+aggregates the one-hot-encoded columns back to the original 13 features
+the user actually filled in (so you see "Chest pain type" once, not four
+separate `cp_0`/`cp_1`/`cp_2`/`cp_3` dummy columns), and surfaces the top
+contributors as both plain-language sentences and a Plotly bar chart on
+the prediction page.
+
+**Correctness check that matters here**: SHAP values are only meaningful
+if they're *additive* - base value + all contributions must reconstruct
+the actual predicted probability exactly. Verified this holds
+(`tests/test_explain_heart.py::test_shap_values_are_additive_to_actual_prediction`)
+before trusting any of the individual numbers.
+
+**A counterintuitive-but-verified finding, not a bug**: "Asymptomatic"
+chest pain *decreases* predicted risk in this model. Checked directly
+against the training data before accepting it: in this specific dataset,
+patients with `cp=0` ("typical angina") have a 72.7% disease rate vs. only
+30.4% for `cp=3` ("asymptomatic") — a well-documented quirk of this exact
+Cleveland dataset, not a modeling error. Documented in
+`ml/explain_heart.py` so it doesn't get "fixed" incorrectly later.
+
+`prediction_history.shap_values` (already in the Milestone 3 schema,
+unused until now) stores the full explanation alongside each prediction.
+
+37/37 tests passing.
 
 ## Milestone 4: Heart Disease Model
 
