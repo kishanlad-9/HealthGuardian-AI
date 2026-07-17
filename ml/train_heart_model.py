@@ -12,8 +12,17 @@ baseline that a portfolio project should be able to justify losing to,
 not just skip.
 """
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Makes this file runnable both as `python -m ml.train_heart_model` AND as
+# `python ml/train_heart_model.py` / VS Code's "Run" button. The latter two
+# only put this file's own folder (ml/) on sys.path, not the project root,
+# so `from ml.preprocessing import ...` below would fail with
+# "ModuleNotFoundError: No module named 'ml'" without this - inserting the
+# project root explicitly makes both invocation styles work the same way.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import joblib
 import numpy as np
