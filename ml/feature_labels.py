@@ -49,3 +49,17 @@ def format_feature_value(feature: str, value) -> str:
     if feature in CATEGORY_VALUE_LABELS:
         return CATEGORY_VALUE_LABELS[feature].get(value, str(value))
     return str(value)
+
+
+# Diabetes (Milestone 7) - all 8 features are numeric, no category-value
+# maps needed (unlike heart disease's cp/thal/etc.), just display names.
+DIABETES_FEATURE_DISPLAY_NAMES = {
+    "pregnancies": "Number of pregnancies",
+    "glucose": "Plasma glucose concentration",
+    "blood_pressure": "Diastolic blood pressure",
+    "skin_thickness": "Triceps skin fold thickness",
+    "insulin": "2-hour serum insulin",
+    "bmi": "Body mass index (BMI)",
+    "diabetes_pedigree": "Diabetes pedigree function (family history score)",
+    "age": "Age",
+}
