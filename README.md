@@ -5,7 +5,7 @@ demonstrating end-to-end ML engineering: authentication, ML model training
 and serving, SHAP-based explainability, and PDF reporting, built as a
 Streamlit application.
 
-**Project status:** Milestone 7 of 9 — diabetes model live. See [Roadmap](#roadmap).
+**Project status:** UI theme applied (post-Milestone 7). See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -96,6 +96,39 @@ it (unlike heart disease, no inversion here) and confirmed SHAP additivity
 holds.
 
 51/51 tests passing.
+
+## UI Theme (post-Milestone 7, pre-Milestone 8)
+
+Applied a custom color theme and redesigned the login/signup page, based
+on two reference designs provided by the user (a navy/mint healthcare
+site and an indigo split-panel login page) - blended into one palette
+rather than copying either exactly:
+
+- **Navy** (`#1B2A56`) as the primary brand color, **indigo** (`#5B5FEF`)
+  for interactive elements (buttons, links, focus states), **mint**
+  (`#4FD1AE`) as a sparing accent (tags, progress bar), on a soft
+  lavender-gray page background instead of plain white.
+- `utils/theme.py` — one CSS injection function (`inject_theme()`),
+  called at the top of every page, so the palette lives in exactly one
+  place. Includes hover/lift transitions on buttons and metric cards,
+  focus glow on inputs, and a fade-in-up animation on page load.
+- `pages/1_Login.py` — rebuilt as a split-panel layout (form left,
+  illustration right) matching the reference login page's structure.
+  Streamlit forms are styled as cards via CSS targeting `stForm`
+  directly (raw HTML div-wrapping doesn't create real DOM nesting
+  around Streamlit widgets, so this was the more reliable approach).
+- `utils/illustrations.py` — an original healthcare-themed SVG
+  illustration (pulse-line badge + floating medical icons, animated)
+  for the login page's right panel, since the reference illustration
+  was for an unrelated cleaning-service app and needed to be replaced
+  with something on-theme.
+
+**Honest limitation**: this was built and verified for correctness (no
+runtime errors, all pages boot, all 51 tests still pass, CSS/SVG
+structurally validated) but not visually - there's no way to render and
+screenshot a Streamlit app in the environment this was built in. If
+anything looks off once you actually see it rendered, that's the next
+thing to fix, not a sign the whole approach needs to change.
 
 ## Milestone 6: SHAP Explanations
 

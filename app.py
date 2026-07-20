@@ -11,6 +11,7 @@ import streamlit as st
 
 from authentication.session import get_current_user, is_logged_in
 from database.db import init_db
+from utils.theme import inject_theme
 
 st.set_page_config(
     page_title="HealthGuardian AI",
@@ -18,12 +19,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+inject_theme()
 
 init_db()  # idempotent - creates tables on first run, no-ops after
 
 
 def render_landing() -> None:
     """Render the landing page."""
+    st.markdown('<span class="hg-pill">Portfolio ML Project</span>', unsafe_allow_html=True)
     st.title("🩺 HealthGuardian AI")
     st.subheader("Explainable chronic disease risk prediction")
 

@@ -9,8 +9,10 @@ from database.predictions import get_predictions_for_user, save_prediction
 from ml.explain_diabetes import ModelNotTrainedError as ExplainerNotTrainedError
 from ml.explain_diabetes import explain_prediction
 from ml.predict_diabetes import ModelNotTrainedError, predict_diabetes
+from utils.theme import inject_theme
 
 st.set_page_config(page_title="Diabetes Risk - HealthGuardian AI", page_icon="🩸")
+inject_theme()
 
 user = require_login()
 
