@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-07-20T04:38:14.829017+00:00",
+  "trained_at": "2026-07-21T04:00:34.099453+00:00",
   "dataset_rows": 768,
   "train_rows": 614,
   "test_rows": 154,
@@ -14,8 +14,8 @@
       "std_roc_auc": 0.022
     },
     "xgboost": {
-      "mean_roc_auc": 0.7794,
-      "std_roc_auc": 0.0287
+      "mean_roc_auc": 0.7745,
+      "std_roc_auc": 0.0299
     }
   },
   "test_set_metrics": {
