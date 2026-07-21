@@ -9,8 +9,10 @@ from ml.explain_heart import ModelNotTrainedError as ExplainerNotTrainedError
 from ml.explain_heart import explain_prediction
 from ml.feature_labels import CP_OPTIONS, RESTECG_OPTIONS, SLOPE_OPTIONS, THAL_OPTIONS
 from ml.predict_heart import ModelNotTrainedError, predict_heart_disease
+from utils.theme import inject_theme
 
 st.set_page_config(page_title="Heart Disease Risk - HealthGuardian AI", page_icon="🫀")
+inject_theme()
 
 user = require_login()
 

@@ -5,7 +5,7 @@ demonstrating end-to-end ML engineering: authentication, ML model training
 and serving, SHAP-based explainability, and PDF reporting, built as a
 Streamlit application.
 
-**Project status:** Milestone 6 of 9 — SHAP explanations live. See [Roadmap](#roadmap).
+**Project status:** UI theme applied (post-Milestone 7). See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -59,9 +59,76 @@ Visit `http://localhost:8501`.
 - [x] **Milestone 4** — Heart disease model (UCI dataset, training pipeline)
 - [x] **Milestone 5** — Prediction UI integration
 - [x] **Milestone 6** — SHAP explanations
-- [ ] **Milestone 7** — Diabetes model (Pima Indians dataset)
+- [x] **Milestone 7** — Diabetes model (Pima Indians dataset)
 - [ ] **Milestone 8** — Dashboards and PDF reports
 - [ ] **Milestone 9** — Testing and deployment
+
+## Milestone 7: Diabetes Model
+
+```bash
+python ml/download_diabetes_dataset.py    # downloads datasets/pima_diabetes.csv
+python ml/train_diabetes_model.py         # trains, compares, saves the best model
+```
+
+Built the full diabetes vertical in one pass (data → training → prediction →
+SHAP explanation → UI), reusing the pattern established for heart disease:
+`pages/3_Diabetes_Prediction.py` — login-gated form, prediction, plain-language
++ chart explanation, saved to prediction history. No schema changes needed;
+`prediction_history.disease_type` already allowed `'diabetes'` since Milestone 3.
+
+**A real data-quality issue, handled not just noted**: this dataset uses `0`
+as a missing-value placeholder in `glucose`, `blood_pressure`,
+`skin_thickness`, `insulin`, and `bmi` — verified empirically (insulin missing
+in 48.7% of rows). Fixed with median imputation inside the training pipeline
+(fit on the training fold only). `pregnancies=0` is a legitimate value and
+was deliberately left untouched.
+
+**Result: Logistic Regression won** (0.843 CV ROC-AUC) over Random Forest
+(0.820) and XGBoost (0.779). Test set: 70.8% accuracy, 0.813 ROC-AUC, 50.0%
+recall — lower than the heart model's recall, documented honestly in
+`saved_models/README.md` rather than glossed over.
+
+Because the winning model is linear (not a tree ensemble like heart
+disease's Random Forest), `ml/explain_diabetes.py` uses a different,
+model-agnostic SHAP explainer instead of `TreeExplainer` - see that file's
+docstring. Verified class-direction correctness this time before trusting
+it (unlike heart disease, no inversion here) and confirmed SHAP additivity
+holds.
+
+51/51 tests passing.
+
+## UI Theme (post-Milestone 7, pre-Milestone 8)
+
+Applied a custom color theme and redesigned the login/signup page, based
+on two reference designs provided by the user (a navy/mint healthcare
+site and an indigo split-panel login page) - blended into one palette
+rather than copying either exactly:
+
+- **Navy** (`#1B2A56`) as the primary brand color, **indigo** (`#5B5FEF`)
+  for interactive elements (buttons, links, focus states), **mint**
+  (`#4FD1AE`) as a sparing accent (tags, progress bar), on a soft
+  lavender-gray page background instead of plain white.
+- `utils/theme.py` — one CSS injection function (`inject_theme()`),
+  called at the top of every page, so the palette lives in exactly one
+  place. Includes hover/lift transitions on buttons and metric cards,
+  focus glow on inputs, and a fade-in-up animation on page load.
+- `pages/1_Login.py` — rebuilt as a split-panel layout (form left,
+  illustration right) matching the reference login page's structure.
+  Streamlit forms are styled as cards via CSS targeting `stForm`
+  directly (raw HTML div-wrapping doesn't create real DOM nesting
+  around Streamlit widgets, so this was the more reliable approach).
+- `utils/illustrations.py` — an original healthcare-themed SVG
+  illustration (pulse-line badge + floating medical icons, animated)
+  for the login page's right panel, since the reference illustration
+  was for an unrelated cleaning-service app and needed to be replaced
+  with something on-theme.
+
+**Honest limitation**: this was built and verified for correctness (no
+runtime errors, all pages boot, all 51 tests still pass, CSS/SVG
+structurally validated) but not visually - there's no way to render and
+screenshot a Streamlit app in the environment this was built in. If
+anything looks off once you actually see it rendered, that's the next
+thing to fix, not a sign the whole approach needs to change.
 
 ## Milestone 6: SHAP Explanations
 
